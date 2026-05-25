@@ -1,6 +1,6 @@
 
 [build]
-  publish = "public"          # folder where index.html lives
+  publish = "."           # folder where index.html lives
   functions = "netlify/functions"
 
 [[redirects]]
