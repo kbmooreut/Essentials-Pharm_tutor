@@ -5,10 +5,10 @@ exports.handler = async function (event) {
   }
 
   // Basic origin check — replace with your actual Netlify domain once deployed
-  const allowedOrigins = [
-    "http://localhost:8888",       // local dev
-    "https://your-site.netlify.app" // ← replace with your Netlify URL after deploy
-  ];
+const allowedOrigins = [
+    "http://localhost:8888",
+    "https://essentialspharmtutor.netlify.app"
+];
   const origin = event.headers.origin || "";
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[1];
 
