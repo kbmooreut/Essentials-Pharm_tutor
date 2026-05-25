@@ -24,8 +24,6 @@
 <script type="text/babel">
 const { useState, useRef, useEffect } = React;
 
-const ANTHROPIC_API_KEY = "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";
-
 const SYSTEM_PROMPT = `You are a Socratic Pharmacology Tutor for medical students (MS2 level, Step 1 preparation). This tutor is for EDUCATION ONLY — not medical advice.
 
 COURSE DRUG LIST (you may ONLY use these drugs):
@@ -212,20 +210,16 @@ function App() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
 
-  const callClaude = async (userMessage, history) => {
+  // Calls Netlify function — API key stays safe on the server
+  const callAPI = async (userMessage, history) => {
     const msgs = [
       ...history.map(m => ({ role:m.role, content:m.content })),
       { role:"user", content:userMessage }
     ];
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/.netlify/functions/chat", {
       method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version":"2023-06-01",
-        "anthropic-dangerous-direct-browser-access":"true"
-      },
-      body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1200, system:SYSTEM_PROMPT, messages:msgs })
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ system: SYSTEM_PROMPT, messages: msgs })
     });
     if (!res.ok) throw new Error(`API error ${res.status}`);
     const data = await res.json();
@@ -240,10 +234,10 @@ function App() {
     const qtLabel = QUESTION_TYPES.find(q => q.id===selectedQType)?.label || "";
     const initMsg = `Student selected: Week focus: ${weekLabel}, Question type: ${qtLabel}, Difficulty: ${difficulty}. Greet them warmly, confirm selections briefly, and begin immediately.`;
     try {
-      const reply = await callClaude(initMsg, []);
+      const reply = await callAPI(initMsg, []);
       setMessages([{ role:"assistant", content:reply }]);
     } catch(e) {
-      setMessages([{ role:"assistant", content:"⚠️ Could not connect. Please check your API key and try again." }]);
+      setMessages([{ role:"assistant", content:"⚠️ Could not connect. Please check your Netlify function and API key." }]);
     }
     setLoading(false);
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -256,7 +250,7 @@ function App() {
     setMessages(newHistory);
     setLoading(true);
     try {
-      const reply = await callClaude(text, messages);
+      const reply = await callAPI(text, messages);
       setMessages([...newHistory, { role:"assistant", content:reply }]);
     } catch(e) {
       setMessages([...newHistory, { role:"assistant", content:"⚠️ Something went wrong. Please try again." }]);
