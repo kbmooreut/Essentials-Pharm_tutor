@@ -201,15 +201,20 @@ const TOPIC_PROMPTS = [
   { icon:"🎲", label:"Surprise Me", msg:"Pick any topic from my selected week and ask me a question — your choice." },
 ];
 
-// Usage tracking (GoatCounter) — anonymous counts only, no student data or message text.
-// Fails silently if the counter is blocked or hasn't loaded.
-const track = (name) => {
+// Usage tracking — anonymous counts only, no student data or message text.
+// Sends event names to this site's own function (netlify/functions/tally.mjs),
+// which passes them to GoatCounter. Fails silently so it can never break the tutor.
+const sendCounts = (hits) => {
   try {
-    if (window.goatcounter && window.goatcounter.count) {
-      window.goatcounter.count({ path: name, title: "Essentials 1.1 Pharmacology", event: true });
-    }
+    fetch("/.netlify/functions/tally", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Essentials 1.1 Pharmacology", hits }),
+      keepalive: true
+    }).catch(() => {});
   } catch (e) {}
 };
+const track = (...names) => sendCounts(names.map(n => ({ path: n, event: true })));
 
 function App() {
   const [screen, setScreen] = useState("home");
@@ -224,6 +229,7 @@ function App() {
   const msgCount = useRef(0); // student messages in the current session (for usage milestones)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
+  useEffect(() => { sendCounts([{ path: "/", event: false }]); }, []); // count one page load
 
   // Calls Netlify function — API key stays safe on the server
   const callAPI = async (userMessage, history) => {
@@ -248,10 +254,7 @@ function App() {
     const weekLabel = selectedWeek==="all" ? "all weeks" : selectedWeek==="pk" ? "Pharmacokinetics/Pharmacodynamics" : `Week ${selectedWeek} (${weekInfo?.sub})`;
     const qtLabel = QUESTION_TYPES.find(q => q.id===selectedQType)?.label || "";
     msgCount.current = 0;
-    track("Session started");
-    track(`Week: ${weekInfo?.label || selectedWeek}`);
-    track(`Session type: ${selectedQType}`);
-    track(`Difficulty: ${difficulty}`);
+    track("Session started", `Week: ${weekInfo?.label || selectedWeek}`, `Session type: ${selectedQType}`, `Difficulty: ${difficulty}`);
     const initMsg = `Student selected: Week focus: ${weekLabel}, Question type: ${qtLabel}, Difficulty: ${difficulty}. Greet them warmly, confirm selections briefly, and begin immediately.`;
     try {
       const reply = await callAPI(initMsg, []);
@@ -444,7 +447,5 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
-<!-- Usage analytics (GoatCounter), routed through this site via netlify.toml -->
-<script data-goatcounter="/lib/ping" async src="/lib/helper.js"></script>
 </body>
 </html>
