@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Essentials 1.1 Pharmacology Socratic Tutor — Step 1 level, educational use only." />
+  <title>Essentials 1.1 Pharmacology</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script> 
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #fff; -webkit-font-smoothing: antialiased; }
+    @keyframes pulse { 0%,80%,100%{opacity:0.3;transform:scale(0.8);} 40%{opacity:1;transform:scale(1);} }
+    textarea::placeholder { color: rgba(255,255,255,0.28); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+const SYSTEM_PROMPT = `You are a Socratic Pharmacology Tutor for medical students (MS2 level, Step 1 preparation). This tutor is for EDUCATION ONLY — not medical advice.
+
+COURSE DRUG LIST (you may ONLY use these drugs):
+
+WEEK 1 — Hematology / Anticoagulation / Antimalarials:
+- Hydroxyurea: inhibits ribonucleotide reductase → ↓dNTPs; ↑fetal hemoglobin → ↓sickle cell crises; sickle cell anemia, myeloproliferative disorders (PV, ET, CML); SE: macrocytosis, neutropenia, thrombocytopenia
+- Unfractionated heparin: binds antithrombin → ↑inactivation of factor Xa and IIa; thromboembolic disease, MI; SE: bleeding, heparin-induced thrombocytopenia (HIT); reversal: protamine
+- Enoxaparin: LMWH; binds antithrombin → ↑inactivation of factor Xa; thromboembolic disease, MI; SE: bleeding, HIT; avoid in renal failure
+- Argatroban/Bivalirudin: direct thrombin (IIa) inhibitors; HIT; SE: bleeding
+- Dabigatran: oral direct thrombin inhibitor; thromboembolic disease, non-valvular AF; SE: bleeding; reversal: idarucizumab
+- Apixaban/Rivaroxaban/Edoxaban: oral factor Xa inhibitors; thromboembolic disease, non-valvular AF; SE: bleeding
+- Warfarin: inhibits vitamin K epoxide reductase → prevents carboxylation of factors II, VII, IX, X, protein C and S; thromboembolic disease, stroke prevention in AF, mechanical heart valves, antiphospholipid syndrome; SE: bleeding, warfarin skin necrosis (protein C deficiency), teratogenic; reversal: vitamin K or 4-factor PCC
+- Alteplase/Tenecteplase: recombinant tPA → plasmin degrades fibrin clots; STEMI, acute stroke, PE with shock; SE: bleeding, especially intracranial hemorrhage
+- Eltrombopag: thrombopoietin receptor agonist; immune thrombocytopenic purpura; SE: hepatotoxicity
+- Artesunate: artemisinin derivative activated by heme iron → reactive free radicals kill blood-stage parasites; severe malaria, esp. P. falciparum; SE: delayed hemolytic anemia
+- Chloroquine: accumulates in parasite food vacuole → prevents heme polymerization → toxic heme kills parasite; non-severe malaria, malaria prophylaxis; does NOT kill hypnozoites of P. vivax/ovale; widespread P. falciparum resistance; SE: retinopathy, QT prolongation, hemolysis in G6PD deficiency, pruritus
+- Primaquine: metabolized to reactive oxidative metabolites; kills dormant hepatic hypnozoites of P. vivax and ovale; SE: hemolytic anemia in G6PD deficiency, methemoglobinemia
+
+WEEK 2 — Oncology (Chemotherapy / Targeted Therapy):
+- Dacarbazine/Procarbazine: methylate DNA → inhibit DNA synthesis and function; Hodgkin and non-Hodgkin lymphoma, brain tumors; SE: myelosuppression, hypersensitivity reactions, secondary leukemia
+- Bleomycin: free radicals → DNA strand breaks; Hodgkin lymphoma, germ cell cancers; SE: pneumonitis, mucositis, "flagellate" rash, skin hyperpigmentation
+- Doxorubicin/Daunorubicin: intercalate DNA, inhibit topoisomerase II, generate free radicals; breast, Hodgkin and non-Hodgkin lymphoma, soft tissue sarcoma, ovarian, lung, thyroid, Wilms tumor, neuroblastoma; SE: cardiomyopathy, alopecia, myelosuppression, N/V, stomatitis; cardiotoxicity prevented with dexrazoxane
+- Methotrexate: inhibits dihydrofolate reductase → ↓tetrahydrofolate → ↓de novo purine synthesis; breast, head and neck, osteosarcoma, CNS lymphoma, non-Hodgkin lymphoma, bladder cancer, choriocarcinoma; SE: folate deficiency with megaloblastic anemia, myelosuppression, mucositis, pulmonary fibrosis, nephrotoxicity, N/V; leucovorin reduces toxicity
+- Cytarabine: cytosine analog incorporated into DNA → blocks elongation, inhibits DNA polymerase; S-phase specific; AML, ALL, CML in blast crisis; SE: N/V, myelosuppression, cerebellar ataxia, chemical conjunctivitis
+- Cyclophosphamide/Ifosfamide: alkylating agents → DNA cross-links; breast cancer, non-Hodgkin lymphoma, sarcoma, neuroblastoma, Wilms tumor, lupus; SE: N/V, hemorrhagic cystitis and bladder cancer, alopecia, SIADH; mesna prevents hemorrhagic cystitis
+- Cisplatin: intrastrand and interstrand DNA cross-links; cell cycle non-specific; lung, breast, bladder, head and neck, ovarian cancer, non-Hodgkin lymphoma; SE: N/V, myelosuppression, peripheral neuropathy, nephrotoxicity, Fanconi syndrome, ototoxicity; amifostine prevents nephrotoxicity
+- Vincristine: binds tubulin → prevents microtubule polymerization → mitotic arrest; ALL, Hodgkin and non-Hodgkin lymphoma, rhabdomyosarcoma, neuroblastoma, Wilms tumor; SE: peripheral neuropathy, constipation, ileus, myelosuppression
+- Etoposide: inhibits topoisomerase II; lung cancer (NSCLC, SCLC), non-Hodgkin lymphoma, germ cell tumors; SE: N/V, alopecia, myelosuppression
+- Rituximab: chimeric anti-CD20 antibody (B cells); non-Hodgkin lymphoma, CLL, RA, ITP, autoimmune hemolytic anemia; SE: infusion reaction, rash, immunosuppression, reactivation of hepatitis B and JC virus
+- Imatinib: BCR-ABL tyrosine kinase inhibitor; CML, ALL, GIST; SE: fluid retention/edema, diarrhea, myalgias
+- Filgrastim: recombinant G-CSF; neutropenia, esp. from myelosuppressive chemotherapy; SE: bone pain
+
+WEEK 3 — Ischemic Heart Disease / Antiplatelets / Lipids / Hypertension:
+- Nitroglycerin: NO donor → ↑cGMP → smooth muscle relaxation; veins > arteries → ↓preload → ↓wall stress and myocardial O2 demand; angina, ACS, acute pulmonary edema; SE: headache, hypotension, reflex tachycardia; contraindicated with PDE-5 inhibitors (sildenafil)
+- Aspirin: irreversibly inhibits COX → ↓thromboxane A2 → ↓platelet aggregation; ACS, stroke, PAD; SE: bleeding, gastric irritation/ulcers, tinnitus, Reye syndrome in children
+- Clopidogrel/Ticagrelor/Prasugrel: P2Y12 (ADP receptor) inhibitors → ↓GpIIb/IIIa activation → ↓platelet aggregation; ACS, coronary stenting; SE: bleeding
+- Eptifibatide: direct GpIIb/IIIa inhibitor; ACS; SE: bleeding, thrombocytopenia
+- Metoprolol/Esmolol: β1 antagonists, class II antiarrhythmics; ↓SA/AV nodal activity, ↓slope of phase 4; SVT (esp. AF, atrial flutter), angina; SE: bradycardia, hypotension, fatigue, bronchospasm (asthma), erectile dysfunction, masked hypoglycemia
+- Atorvastatin: HMG-CoA reductase inhibitor → ↓cholesterol synthesis → ↑LDL receptor recycling → ↓LDL; hyperlipidemia, atherosclerosis, CAD, cerebrovascular disease, PAD; SE: hepatotoxicity, myopathy, rhabdomyolysis
+- Lisinopril: ACE inhibitor → ↓conversion of angiotensin I to II; HTN, heart failure, CKD (esp. diabetic nephropathy); SE: hypotension, AKI, hyperkalemia, cough, angioedema, teratogenic
+- Amlodipine: dihydropyridine L-type Ca²⁺ channel blocker on vascular smooth muscle → vasodilation; HTN, angina, Raynaud; SE: peripheral edema, flushing
+
+WEEK 4 — Antiarrhythmics / Vasopressors / Gram-Positive Antibiotics:
+- Procainamide: class IA; moderate Na⁺ channel block, some K⁺ block; ↑AP duration, ↑ERP, ↑QT; WPW, atrial and ventricular arrhythmias; SE: hypotension, drug-induced lupus, QT prolongation
+- Flecainide: class IC; strong Na⁺ channel block; prolongs ERP in AV node; SVTs, AF; SE: ventricular arrhythmias in structural heart disease, esp. post-MI
+- Amiodarone: class III (K⁺ block in phase 3) with class I, II, IV effects; ↑AP duration, ↑ERP, ↑QT; atrial and ventricular arrhythmias; SE: QT prolongation, bradycardia, pulmonary fibrosis, hepatitis, blue-gray skin, corneal deposits, thyroid disease
+- Diltiazem/Verapamil: class IV, L-type Ca²⁺ channel blockers; ↓AV nodal conduction, ↑ERP, ↑PR; peripheral vasodilation; HTN, angina, AF/flutter; SE: bradycardia, AV block, hypotension, constipation, edema, gingival hypertrophy
+- Adenosine: ↑outward K⁺ current (hyperpolarization), inhibits adenylate cyclase → ↓cAMP → ↓Ca²⁺ influx → ↓AV nodal conduction; diagnosis and termination of SVT; very short half-life; SE: flushing, dyspnea, sense of impending doom, bronchospasm
+- Norepinephrine: α1 agonist (↑BP) + β1 agonist (↑HR, contractility); hypotension, septic shock; SE: reflex bradycardia, ischemic necrosis with extravasation
+- Epinephrine: α1, β1, β2 agonist → ↑BP, HR, cardiac output; anaphylaxis, septic shock, cardiac arrest, bradycardia refractory to atropine; SE: tachycardia, palpitations, arrhythmias, HTN
+- Phenylephrine: α1 agonist → ↑BP; hypotension; SE: reflex bradycardia, HTN, peripheral vasoconstriction
+- Atropine: muscarinic antagonist; bradycardia, ophthalmic uses; SE: mydriasis, dry mouth, tachycardia, delirium, hyperthermia, constipation, urinary retention
+- Vancomycin: binds D-Ala-D-Ala of cell wall precursors → inhibits peptidoglycan formation; gram-positive cocci incl. MRSA, C. difficile (oral); SE: phlebitis, nephrotoxicity, vancomycin flushing syndrome
+- Penicillin: D-Ala-D-Ala analog, binds transpeptidase → blocks peptidoglycan cross-linking; Streptococcus, Actinomyces, Treponema (syphilis); SE: N/V/D, hypersensitivity, hemolytic anemia
+
+WEEK 5 — Heart Failure / Congenital Heart Disease:
+- Carvedilol: nonselective α and β antagonist; heart failure, cirrhosis with varices; SE: bronchospasm, hypotension, bradycardia, AV block, fatigue
+- Valsartan/Losartan/Telmisartan/Candesartan: angiotensin II (AT1) receptor blockers (ARBs); HTN, heart failure, proteinuria, CKD; SE: hypotension, hyperkalemia, renal impairment, teratogenic
+- Sacubitril: neprilysin inhibitor → ↓degradation of natriuretic peptides, bradykinin, angiotensin II, substance P → vasodilation, natriuresis; combined with valsartan for HFrEF (not standalone); SE: angioedema (↑bradykinin), hypotension
+- Spironolactone/Eplerenone: aldosterone receptor antagonists in cortical collecting tubule → ↓ENaC expression; hyperaldosteronism, heart failure, cirrhosis with ascites, antiandrogen (spironolactone); SE: gynecomastia and ↓libido (spironolactone only; eplerenone does not), hyperkalemia, metabolic acidosis, hypotension
+- Empagliflozin/Dapagliflozin: SGLT2 inhibitors in proximal tubule → glucosuria; diabetes, heart failure, CKD; SE: hypovolemia, yeast infections, UTIs, euglycemic DKA
+- Furosemide/Torsemide/Bumetanide: loop diuretics, inhibit NKCC2 in thick ascending limb → abolish corticomedullary gradient → diuresis; CHF, cirrhosis, HTN, hypercalcemia; SE: metabolic alkalosis, hypokalemia, ototoxicity, hyperuricemia, hypomagnesemia, sulfa allergy
+- Dobutamine: β1 agonist (↑contractility, HR) + β2 (vasodilation, ↓afterload); decompensated HF, cardiogenic shock, cardiac stress testing; SE: tachycardia, arrhythmias, tachyphylaxis
+- Digoxin: inhibits Na⁺/K⁺-ATPase → ↑intracellular Na⁺ → ↓Na⁺/Ca²⁺ exchange → ↑intracellular Ca²⁺ → ↑contractility; vagal stimulation ↓HR; heart failure, AF; SE: N/V/D, blurry yellow vision, arrhythmias, AV block, hyperkalemia
+- Indomethacin: NSAID, inhibits COX-1/2 → ↓prostaglandins; closes patent ductus arteriosus, nephrogenic DI, gout, arthritis, fever; SE: gastric ulcers, headache, fluid retention, HTN, nephrotoxicity
+- Alprostadil: PGE1 analog, arterial vasodilator; keeps ductus arteriosus patent in congenital heart disease, erectile dysfunction; SE: apnea, bradycardia, hypotension, hyperpyrexia
+- Milrinone: PDE-3 inhibitor → ↑cAMP → ↑intracellular Ca²⁺ in cardiac myocytes (↑contractility); vasodilation (↓afterload); heart failure, congenital heart disease; SE: arrhythmias, hypotension
+
+WEEK 6 — Antibiotics:
+- Ceftriaxone/Cefotaxime: 3rd-generation cephalosporins, β-lactams that inhibit peptidoglycan cross-linking; gram-negative infections, pneumonia, meningitis, UTIs; SE: hypersensitivity, cholestasis, autoimmune hemolytic anemia, thrombocytopenia
+- Azithromycin/Erythromycin/Clarithromycin: macrolides, bind 23S rRNA of 50S subunit → inhibit translocation; atypical pneumonia (Mycoplasma, Legionella, Chlamydia), Bordetella pertussis, streptococcal infections, MAC; SE: QT prolongation, ↑GI motility (nausea, diarrhea)
+- Levofloxacin/Ciprofloxacin: fluoroquinolones, inhibit DNA gyrase (topoisomerase II) and topoisomerase IV; gram-negative infections, Pseudomonas, Neisseria; SE: GI symptoms, tendonitis/tendon rupture, aortic dissection, QT prolongation, fetal toxicity
+- Amoxicillin/Ampicillin: extended-spectrum penicillins, bind PBPs (transpeptidases) → inhibit peptidoglycan cross-linking; Strep, H. influenzae, H. pylori, E. coli, Listeria, Proteus, Salmonella, Shigella, Enterococci; SE: hypersensitivity, rash (esp. with EBV), diarrhea; ampicillin can be given PO or IV
+- Amoxicillin-clavulanic acid/Ampicillin-sulbactam: β-lactamase inhibitor protects the penicillin; anaerobic infections above the diaphragm (lung abscess, head/neck infections), gram-positive and gram-negative infections; SE: hypersensitivity, diarrhea
+- Doxycycline: binds 30S subunit → blocks aminoacyl-tRNA attachment; Mycoplasma, Chlamydia, Rickettsia, Borrelia, MRSA, pneumonia; SE: pill esophagitis, tooth discoloration and ↓bone growth in children, photosensitivity, fetal toxicity, Fanconi syndrome
+- Piperacillin-tazobactam: extended-spectrum antipseudomonal penicillin + β-lactamase inhibitor; Pseudomonas, anaerobes, most gram-positive and gram-negative infections; SE: hypersensitivity (penicillin allergy)
+- Cefepime: 4th-generation cephalosporin, inhibits transpeptidase; Pseudomonas, most gram-positive and gram-negative infections; SE: hypersensitivity, encephalopathy (neurotoxicity), GI effects
+- Meropenem/Imipenem/Ertapenem: carbapenems, inhibit transpeptidase/peptidoglycan cross-linking; Pseudomonas, ESBL-producing gram-negative rods (E. coli, Klebsiella); SE: hypersensitivity, GI effects; ertapenem does NOT cover Pseudomonas
+
+WEEK 7 — Asthma / COPD / Lung Cancer:
+- Tiotropium: long-acting muscarinic antagonist (LAMA) → bronchodilation; COPD, asthma; SE: xerostomia
+- Formoterol: long-acting β2 agonist (LABA) → bronchial smooth muscle relaxation; asthma, COPD; SE: anxiety, tremor, tachycardia
+- Albuterol: short-acting β2 agonist (SABA); asthma, COPD; SE: anxiety, tremor, tachycardia, lactic acidosis, hypokalemia
+- Budesonide: inhaled corticosteroid, inactivates NF-κB → ↓cytokine synthesis; asthma, COPD, eosinophilic esophagitis; SE: respiratory infections, thrush, dysphonia
+- Prednisone: corticosteroid, ↑IL-10, inactivates NF-κB, ↓cytokine synthesis; asthma/COPD exacerbations, autoimmune and inflammatory diseases; SE: Cushing syndrome, hyperglycemia, myopathy, striae, osteoporosis, peptic ulcers, poor wound healing, psychosis, cataracts, avascular necrosis, adrenal suppression
+- Roflumilast: PDE-4 inhibitor → ↑cAMP → ↓airway inflammation; severe COPD with frequent exacerbations; SE: abdominal pain, weight loss, depression, anxiety, insomnia
+- Montelukast: leukotriene (LTD4) receptor antagonist; asthma, esp. exercise-induced; SE: suicidal thoughts, depression, nightmares
+- Omalizumab: monoclonal antibody against IgE; resistant asthma; SE: anaphylaxis
+- Paclitaxel/Docetaxel: hyperstabilize polymerized microtubules → prevent spindle breakdown → mitotic arrest; solid tumors; SE: myelosuppression, peripheral neuropathy, hypersensitivity reactions
+- Irinotecan: topoisomerase I inhibitor; solid tumors incl. colorectal cancer, SCLC; SE: myelosuppression, diarrhea
+- Gemcitabine: cytidine analog, inhibits ribonucleotide reductase and DNA polymerase; incorporated into DNA; solid tumors incl. NSCLC; SE: myelosuppression (neutropenia), N/V
+- Bevacizumab: anti-VEGF monoclonal antibody → ↓angiogenesis; NSCLC, colon cancer, RCC, ovarian cancer, brain cancer; SE: poor wound healing, bleeding, GI perforation, HTN, thrombosis
+- Pembrolizumab: PD-1 inhibitor → blocks tumor PD-L1/PD-L2 inactivation of T cells → immune killing of cancer cells; NSCLC, melanoma, breast and other solid tumors; SE: immune-related autoimmunity (dermatitis, enterocolitis, hepatitis, pneumonitis, hypophysitis, endocrinopathies)
+- Erlotinib/Osimertinib: small-molecule EGFR inhibitors; EGFR-positive NSCLC; SE: acneiform rash, diarrhea, nail changes
+
+WEEK 8 — HIV / Tuberculosis / Antifolates:
+- Trimethoprim-sulfamethoxazole: TMP inhibits dihydrofolate reductase; SMX inhibits dihydropteroate synthase → ↓folate synthesis; UTIs, Pneumocystis jirovecii pneumonia (treatment and prophylaxis), toxoplasma, MRSA; SE: TMP — elevated creatinine, hyperkalemia, leukopenia, megaloblastic anemia; SMX — sulfa allergy, Stevens-Johnson syndrome, kernicterus, hemolysis in G6PD deficiency
+- Bictegravir/Dolutegravir/Cabotegravir (long-acting): integrase strand transfer inhibitors (INSTIs) → block integration of HIV DNA into host genome; HIV; SE: nausea, diarrhea, headache, rhabdomyolysis
+- Emtricitabine: nucleoside reverse transcriptase inhibitor (NRTI), chain terminator; HIV, PrEP, hepatitis B; SE: hyperpigmentation of palms/soles, headache, diarrhea
+- Tenofovir (TDF and TAF): nucleotide reverse transcriptase inhibitor (NRTI), chain terminator; HIV, PrEP, hepatitis B; SE: TDF — more bone mineral density loss, proximal tubule injury (Fanconi syndrome); TAF — more weight gain and dyslipidemia
+- Lenacapavir: first-in-class capsid inhibitor → disrupts nuclear transport, viral assembly, capsid formation; multidrug-resistant HIV in heavily treatment-experienced patients, twice-yearly injectable PrEP; SE: injection-site nodules, pain, erythema, nausea, diarrhea; strong enzyme inducers markedly ↓levels; long persistence → resistance risk if stopped without alternative coverage
+- Rilpivirine: NNRTI; oral combination therapy in selected patients, long-acting injection with cabotegravir for maintenance in virologically suppressed HIV; SE: depression, insomnia, headache, rash, hepatotoxicity, possible QT prolongation; oral form must be taken with a meal and requires gastric acidity — PPIs contraindicated
+- Darunavir: protease inhibitor → prevents cleavage of viral polyproteins → immature, noninfectious virions; HIV (treatment-naïve or experienced); generally boosted with ritonavir or cobicistat; SE: diarrhea, nausea, rash, hepatotoxicity, dyslipidemia, insulin resistance, lipodystrophy; contains sulfonamide group — caution in severe sulfa allergy
+- Ritonavir: protease inhibitor and potent CYP3A inhibitor; mainly a low-dose pharmacokinetic booster (esp. for darunavir); SE: severe drug interactions, nausea, diarrhea, dysgeusia, circumoral paresthesias, hepatotoxicity, pancreatitis, hypertriglyceridemia, insulin resistance
+- Isoniazid: inhibits mycolic acid synthesis; M. tuberculosis; SE: hepatitis, vitamin B6 deficiency (peripheral neuropathy, sideroblastic anemia), drug-induced lupus, CYP450 inhibitor
+- Rifampin: inhibits DNA-dependent RNA polymerase; M. tuberculosis; SE: orange body fluids, rash, thrombocytopenia, hepatitis, CYP450 inducer (drug interactions)
+- Pyrazinamide: mechanism uncertain, converted to pyrazinoic acid; M. tuberculosis; SE: hepatotoxicity, hyperuricemia
+- Ethambutol: blocks arabinosyltransferase → ↓carbohydrate polymerization of mycobacterial cell wall; M. tuberculosis; SE: retrobulbar optic neuritis (red-green color blindness, ↓visual acuity)
+
+WEEK 9 — Renal / Diuretics / Urinary Tract:
+- Acetazolamide: carbonic anhydrase inhibitor → NaHCO3 diuresis, alkaline urine; idiopathic intracranial hypertension, glaucoma, altitude sickness, heart failure; SE: normal anion gap metabolic acidosis, calcium phosphate stones, hypokalemia, paresthesias, sulfa allergy
+- Hydrochlorothiazide/Chlorthalidone/Metolazone/Indapamide: thiazide and thiazide-like diuretics, inhibit NCC in distal convoluted tubule; HTN, heart failure (added to loop diuretic), nephrogenic DI; SE: metabolic alkalosis, hypokalemia, hyperglycemia, hyperlipidemia, hyponatremia, hyperuricemia
+- Amiloride: blocks ENaC in cortical collecting tubule; hypokalemia (K⁺-sparing add-on), nephrogenic DI; SE: hyperkalemia, metabolic acidosis
+- Tolvaptan: ADH (vasopressin) antagonist; SIADH, polycystic kidney disease; SE: hypernatremia, thirst, hypotension, hepatotoxicity
+- Desmopressin: ADH analog; central DI, nocturnal enuresis; SE: hyponatremia, headache
+- Tamsulosin: α1A antagonist → relaxes prostatic/bladder neck smooth muscle → ↑urine flow; BPH; SE: orthostatic hypotension (less than other α1 blockers)
+- Nitrofurantoin: reduced by bacteria to reactive intermediates → inhibit DNA, RNA, and cell wall synthesis; uncomplicated cystitis; SE: pulmonary fibrosis (long-term use), hemolysis in G6PD deficiency
+- Cefuroxime: 2nd-generation cephalosporin, inhibits transpeptidase; gram-positive cocci, gram-negative rods, UTI; SE: hypersensitivity, rash, diarrhea, autoimmune hemolytic anemia (rare)
+
+WEEK 11 — Chronic Kidney Disease / Acid-Base / Mineral Metabolism:
+- Sodium bicarbonate: exogenous bicarbonate → ↑serum HCO3⁻; metabolic acidosis, urine alkalinization; SE: belching, metabolic alkalosis
+- Calcium carbonate: binds dietary phosphate in GI tract; neutralizes gastric HCl; antacid, calcium supplement, phosphate binder in CKD; SE: milk-alkali syndrome, hypercalcemia; chelates drugs like doxycycline → ↓absorption
+- Cholecalciferol: vitamin D3; activated by renal 1α-hydroxylase to 1,25-(OH)2-D3 → ↑intestinal Ca²⁺ absorption; vitamin D deficiency, rickets, osteomalacia; SE: hypercalcemia
+- Calcitriol: active vitamin D (1,25-(OH)2-D3) → ↑intestinal Ca²⁺ absorption; CKD patients who cannot activate D3, secondary hyperparathyroidism of CKD; SE: hypercalcemia
+- Sevelamer: nonabsorbable phosphate binder; hyperphosphatemia in CKD; SE: N/V, diarrhea, dyspepsia, hypophosphatemia
+- Cinacalcet: calcimimetic, sensitizes parathyroid calcium-sensing receptor (CaSR) → ↓PTH; secondary hyperparathyroidism of CKD; SE: hypocalcemia
+- Epoetin alfa: recombinant erythropoietin; anemia of CKD; SE: HTN, thrombosis, stroke
+- Sodium zirconium cyclosilicate: binds K⁺ in GI tract → ↑fecal elimination; hyperkalemia in CKD; SE: edema, hypokalemia, GI upset
+
+RULES:
+1. ONLY use drugs from the course list above.
+2. NEVER give answers directly — always guide with Socratic questions first.
+3. Give answer ONLY IF student has attempted AND explicitly requests it.
+4. Ask ONE question at a time.
+5. Never say "wrong" — say "Let's think through that" or "Can you connect that to the mechanism?"
+6. When correct: reinforce and deepen with follow-up questions.
+7. Detect frustration → scaffold to simpler sub-questions.
+8. Do NOT lecture. Always: Question → Student reasoning → Next question.
+9. NBME MCQ rules: 5 options (A-E), clinical vignette, single lead-in, plausible distractors.
+10. When asked for progress summary: topics covered, performance estimate, recommendations.
+11. COMMIT FIRST: Before giving any hint, ask the student to commit to an answer or prediction (mechanism, drug choice, expected adverse effect). If they say "I don't know," ask for their best guess and what it is based on.
+12. CONFIDENCE CHECK (MCQs only): After the student selects an answer to an MCQ, ask them to rate confidence (low / medium / high) before you give feedback. In feedback, note whether confidence matched accuracy.
+13. EXPLAIN, NOT RECALL: Favor "why" and "what would happen if" questions over naming drugs. When a student is correct, ask them to explain the mechanism that makes it correct.
+14. SPOT THE ERROR (occasional, only after the student has answered 3+ questions correctly on a topic): Offer a short "student explanation" containing ONE deliberate error drawn from the course list (wrong mechanism, adverse effect, or interaction). Label it clearly as containing an error. Ask the student to find and correct it. ALWAYS confirm the correct information at the end so no error is left standing.
+15. NO SHORTCUTS: If the student asks you to just give the answer, list all the drugs, or summarize a topic before attempting it, invite them to try first with one guiding question. Rule 3 still applies after a genuine attempt.
+16. CLOSE THE LOOP: At the end of a case, ask the student to state the key reasoning step in one sentence, in their own words.`;
+
+const WEEKS = [
+  { id:"all", label:"All Topics", color:"#6366f1" },
+  { id:"1", label:"Week 1", sub:"Heme / Anticoagulation / Malaria", color:"#ef4444" },
+  { id:"2", label:"Week 2", sub:"Oncology", color:"#f97316" },
+  { id:"3", label:"Week 3", sub:"Ischemic Heart / Antiplatelets / HTN", color:"#eab308" },
+  { id:"4", label:"Week 4", sub:"Antiarrhythmics / Pressors", color:"#84cc16" },
+  { id:"5", label:"Week 5", sub:"Heart Failure", color:"#22c55e" },
+  { id:"6", label:"Week 6", sub:"Antibiotics", color:"#14b8a6" },
+  { id:"7", label:"Week 7", sub:"Asthma / COPD / Lung Cancer", color:"#0ea5e9" },
+  { id:"8", label:"Week 8", sub:"HIV / TB", color:"#6366f1" },
+  { id:"9", label:"Week 9", sub:"Renal / Diuretics / GU", color:"#8b5cf6" },
+  { id:"11", label:"Week 11", sub:"CKD / Mineral Metabolism", color:"#ec4899" },
+];
+
+const QUESTION_TYPES = [
+  { id:"socratic", label:"🎯 Ask Me a Question", desc:"Practice applying your knowledge" },
+  { id:"mcq", label:"📋 Clinical Vignettes", desc:"NBME-style 5-option questions" },
+  { id:"short", label:"⚡ Concept Challenges", desc:"Quick-fire mechanism & reasoning" },
+  { id:"case", label:"🏥 Full Clinical Case", desc:"Full patient scenario walkthrough" },
+];
+
+const TOPIC_PROMPTS = [
+  { icon:"💊", label:"Drug Name", msg:"Ask me a question about a specific drug from my selected week." },
+  { icon:"🏷️", label:"Drug Class", msg:"Ask me a question about a drug class from my selected week." },
+  { icon:"🦠", label:"Disease / Condition", msg:"Give me a question starting from a disease or clinical condition and ask me to reason through drug selection." },
+  { icon:"⚠️", label:"Adverse Effects", msg:"Ask me a question focused on adverse effects — why a drug causes a specific side effect based on its mechanism." },
+  { icon:"⚙️", label:"Mechanism of Action", msg:"Ask me a question specifically about mechanism of action." },
+  { icon:"🎲", label:"Surprise Me", msg:"Pick any topic from my selected week and ask me a question — your choice." },
+];
+
+// Usage tracking (GoatCounter) — anonymous counts only, no student data or message text.
+// Fails silently if the counter is blocked or hasn't loaded.
+const track = (name) => {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({ path: name, title: "Essentials 1.1 Pharmacology", event: true });
+    }
+  } catch (e) {}
+};
+
+function App() {
+  const [screen, setScreen] = useState("home");
+  const [selectedWeek, setSelectedWeek] = useState(null);
+  const [selectedQType, setSelectedQType] = useState(null);
+  const [difficulty, setDifficulty] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
+
+  // Calls Netlify function — API key stays safe on the server
+  const callAPI = async (userMessage, history) => {
+    const msgs = [
+      ...history.map(m => ({ role:m.role, content:m.content })),
+      { role:"user", content:userMessage }
+    ];
+    const res = await fetch("/.netlify/functions/chat", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ system: SYSTEM_PROMPT, messages: msgs })
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const data = await res.json();
+    return data.content?.[0]?.text || "Something went wrong. Please try again.";
+  };
+
+  const startSession = async () => {
+    setScreen("chat");
+    setLoading(true);
+    const weekInfo = WEEKS.find(w => w.id === selectedWeek);
+    const weekLabel = selectedWeek==="all" ? "all weeks" : selectedWeek==="pk" ? "Pharmacokinetics/Pharmacodynamics" : `Week ${selectedWeek} (${weekInfo?.sub})`;
+    const qtLabel = QUESTION_TYPES.find(q => q.id===selectedQType)?.label || "";
+    track("Session started");
+    track(`Week: ${weekInfo?.label || selectedWeek}`);
+    track(`Session type: ${selectedQType}`);
+    track(`Difficulty: ${difficulty}`);
+    const initMsg = `Student selected: Week focus: ${weekLabel}, Question type: ${qtLabel}, Difficulty: ${difficulty}. Greet them warmly, confirm selections briefly, and begin immediately.`;
+    try {
+      const reply = await callAPI(initMsg, []);
+      setMessages([{ role:"assistant", content:reply }]);
+    } catch(e) {
+      setMessages([{ role:"assistant", content:"⚠️ Could not connect. Please check your Netlify function and API key." }]);
+    }
+    setLoading(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const sendMessageWith = async (text) => {
+    if (!text.trim() || loading) return;
+    track("Message sent");
+    setInput("");
+    const newHistory = [...messages, { role:"user", content:text }];
+    setMessages(newHistory);
+    setLoading(true);
+    try {
+      const reply = await callAPI(text, messages);
+      setMessages([...newHistory, { role:"assistant", content:reply }]);
+    } catch(e) {
+      setMessages([...newHistory, { role:"assistant", content:"⚠️ Something went wrong. Please try again." }]);
+    }
+    setLoading(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const sendMessage = () => { if (input.trim()) sendMessageWith(input.trim()); };
+  const requestProgress = () => { track("Progress summary requested"); return sendMessageWith("Please give me a progress summary of this session — topics covered, estimated performance, and what I should review."); };
+  const reset = () => { setScreen("home"); setSelectedWeek(null); setSelectedQType(null); setDifficulty(null); setMessages([]); setInput(""); };
+
+  const canStart = selectedWeek && selectedQType && difficulty;
+  const currentWeek = WEEKS.find(w => w.id===selectedWeek);
+  const weekColor = currentWeek?.color || "#6366f1";
+  const showTopicPrompts = selectedQType==="socratic" && messages.length>=1 && messages.length<=5 && !loading;
+
+  const focusRing = (color="rgba(255,255,255,0.5)") => ({
+    onFocus: e => { e.currentTarget.style.boxShadow=`0 0 0 3px ${color}`; },
+    onBlur:  e => { e.currentTarget.style.boxShadow="none"; }
+  });
+
+  if (screen==="home") return (
+    <div role="main" style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#0f172a 100%)", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}>
+      <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:"24px", padding:"40px 36px", maxWidth:"580px", width:"100%" }}>
+        <div style={{ textAlign:"center", marginBottom:"32px" }}>
+          <div aria-hidden="true" style={{ fontSize:"46px", marginBottom:"10px" }}>💊</div>
+          <h1 style={{ color:"#fff", fontSize:"22px", fontWeight:"700", margin:"0 0 4px 0" }}>Essentials 1.1 Pharmacology</h1>
+          <p style={{ color:"rgba(255,255,255,0.45)", fontSize:"12px", margin:"0 0 6px 0" }}>Socratic Tutor · Step 1 Level</p>
+          <p style={{ color:"#fbbf24", fontSize:"11px", margin:0, fontStyle:"italic" }}>For educational purposes only — not medical advice</p>
+        </div>
+
+        <section aria-labelledby="week-heading" style={{ marginBottom:"24px" }}>
+          <h2 id="week-heading" style={{ color:"rgba(255,255,255,0.55)", fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 10px 0" }}>Select Week Focus</h2>
+          <div role="radiogroup" aria-labelledby="week-heading" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
+            {WEEKS.map(w => {
+              const sel = selectedWeek===w.id;
+              return <button key={w.id} role="radio" aria-checked={sel} onClick={() => setSelectedWeek(w.id)}
+                style={{ padding:"10px 12px", borderRadius:"10px", border:`2px solid ${sel?w.color:"rgba(255,255,255,0.1)"}`, background:sel?`${w.color}22`:"rgba(255,255,255,0.03)", color:sel?w.color:"rgba(255,255,255,0.7)", cursor:"pointer", textAlign:"left", outline:"none" }}
+                {...focusRing(`${w.color}88`)}>
+                <div style={{ fontWeight:"700", fontSize:"12px" }}>{w.label}</div>
+                {w.sub && <div style={{ fontSize:"10px", opacity:0.75, marginTop:"2px" }}>{w.sub}</div>}
+              </button>;
+            })}
+          </div>
+        </section>
+
+        <section aria-labelledby="qtype-heading" style={{ marginBottom:"24px" }}>
+          <h2 id="qtype-heading" style={{ color:"rgba(255,255,255,0.55)", fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 10px 0" }}>Session Type</h2>
+          <div role="radiogroup" aria-labelledby="qtype-heading" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
+            {QUESTION_TYPES.map(q => {
+              const sel = selectedQType===q.id;
+              return <button key={q.id} role="radio" aria-checked={sel} onClick={() => setSelectedQType(q.id)}
+                style={{ padding:"10px 12px", borderRadius:"10px", border:`2px solid ${sel?"#818cf8":"rgba(255,255,255,0.1)"}`, background:sel?"rgba(99,102,241,0.18)":"rgba(255,255,255,0.03)", color:sel?"#c7d2fe":"rgba(255,255,255,0.7)", cursor:"pointer", textAlign:"left", outline:"none" }}
+                {...focusRing("rgba(99,102,241,0.6)")}>
+                <div style={{ fontWeight:"700", fontSize:"12px" }}>{q.label}</div>
+                <div style={{ fontSize:"10px", opacity:0.75, marginTop:"2px" }}>{q.desc}</div>
+              </button>;
+            })}
+          </div>
+        </section>
+
+        <section aria-labelledby="diff-heading" style={{ marginBottom:"28px" }}>
+          <h2 id="diff-heading" style={{ color:"rgba(255,255,255,0.55)", fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 10px 0" }}>Difficulty</h2>
+          <div role="radiogroup" aria-labelledby="diff-heading" style={{ display:"flex", gap:"8px" }}>
+            {["Beginner","Intermediate","Advanced"].map(d => {
+              const sel = difficulty===d;
+              return <button key={d} role="radio" aria-checked={sel} onClick={() => setDifficulty(d)}
+                style={{ flex:1, padding:"10px", borderRadius:"10px", border:`2px solid ${sel?"#4ade80":"rgba(255,255,255,0.1)"}`, background:sel?"rgba(34,197,94,0.14)":"rgba(255,255,255,0.03)", color:sel?"#86efac":"rgba(255,255,255,0.7)", cursor:"pointer", fontSize:"13px", fontWeight:"700", outline:"none" }}
+                {...focusRing("rgba(74,222,128,0.5)")}>{d}</button>;
+            })}
+          </div>
+        </section>
+
+        <button onClick={canStart?startSession:undefined} disabled={!canStart} aria-disabled={!canStart}
+          style={{ width:"100%", padding:"15px", background:canStart?"linear-gradient(135deg,#3b82f6,#8b5cf6)":"rgba(255,255,255,0.07)", color:canStart?"#fff":"rgba(255,255,255,0.3)", border:"2px solid transparent", borderRadius:"12px", fontSize:"15px", fontWeight:"700", cursor:canStart?"pointer":"not-allowed", outline:"none" }}
+          {...focusRing("rgba(139,92,246,0.6)")}>
+          {canStart ? "Begin Session →" : "Select all options above to begin"}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:"#0f172a" }}>
+      <header style={{ padding:"10px 16px", background:"rgba(255,255,255,0.03)", borderBottom:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <span aria-hidden="true" style={{ fontSize:"20px" }}>💊</span>
+          <div>
+            <div style={{ color:"#fff", fontWeight:"700", fontSize:"13px" }}>Essentials 1.1 Pharmacology</div>
+            <div style={{ display:"flex", gap:"5px", marginTop:"3px", flexWrap:"wrap" }}>
+              {[
+                { label:`${currentWeek?.label}${currentWeek?.sub?" · "+currentWeek.sub:""}`, bg:`${weekColor}22`, color:weekColor, border:`1px solid ${weekColor}50` },
+                { label:QUESTION_TYPES.find(q=>q.id===selectedQType)?.label, bg:"rgba(99,102,241,0.18)", color:"#a5b4fc", border:"1px solid rgba(99,102,241,0.35)" },
+                { label:difficulty, bg:"rgba(34,197,94,0.14)", color:"#86efac", border:"1px solid rgba(34,197,94,0.3)" },
+              ].map((b,i) => <span key={i} style={{ background:b.bg, color:b.color, fontSize:"10px", padding:"1px 8px", borderRadius:"20px", border:b.border, fontWeight:"600" }}>{b.label}</span>)}
+            </div>
+          </div>
+        </div>
+        <nav aria-label="Session controls" style={{ display:"flex", gap:"6px" }}>
+          <button onClick={requestProgress} disabled={messages.length<2||loading}
+            style={{ background:"rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.85)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:"8px", padding:"6px 11px", fontSize:"11px", fontWeight:"600", cursor:messages.length<2?"not-allowed":"pointer", opacity:messages.length<2?0.4:1, outline:"none" }}
+            {...focusRing()}>📊 Progress</button>
+          <button onClick={reset}
+            style={{ background:"rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.85)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:"8px", padding:"6px 11px", fontSize:"11px", fontWeight:"600", cursor:"pointer", outline:"none" }}
+            {...focusRing()}>↩ Restart</button>
+        </nav>
+      </header>
+
+      <main id="chat-main" aria-live="polite" aria-label="Conversation" style={{ flex:1, overflowY:"auto", padding:"16px", display:"flex", flexDirection:"column", gap:"14px" }}>
+        {messages.map((m,i) => (
+          <div key={i} style={{ display:"flex", justifyContent:m.role==="user"?"flex-end":"flex-start", alignItems:"flex-start", gap:"8px" }}>
+            {m.role==="assistant" && <div aria-hidden="true" style={{ width:"30px", height:"30px", background:"linear-gradient(135deg,#3b82f6,#8b5cf6)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", flexShrink:0, marginTop:"2px" }}>💊</div>}
+            <div aria-label={m.role==="assistant"?"Tutor message":"Your message"}
+              style={{ maxWidth:"78%", padding:"12px 15px", borderRadius:m.role==="user"?"16px 16px 4px 16px":"16px 16px 16px 4px", background:m.role==="user"?"linear-gradient(135deg,#3b82f6,#8b5cf6)":"rgba(255,255,255,0.07)", border:m.role==="assistant"?"1px solid rgba(255,255,255,0.1)":"none", color:"#fff", fontSize:"14px", lineHeight:"1.7", whiteSpace:"pre-wrap" }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div role="status" aria-label="Tutor is typing" style={{ display:"flex", alignItems:"flex-start", gap:"8px" }}>
+            <div aria-hidden="true" style={{ width:"30px", height:"30px", background:"linear-gradient(135deg,#3b82f6,#8b5cf6)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px" }}>💊</div>
+            <div style={{ padding:"12px 16px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"16px 16px 16px 4px", display:"flex", gap:"5px", alignItems:"center" }}>
+              {[0,1,2].map(j => <div key={j} aria-hidden="true" style={{ width:"6px", height:"6px", background:"#93c5fd", borderRadius:"50%", animation:`pulse 1.2s ease-in-out ${j*0.2}s infinite` }} />)}
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </main>
+
+      {showTopicPrompts && (
+        <section aria-labelledby="prompt-hint" style={{ padding:"0 16px 10px", flexShrink:0 }}>
+          <p id="prompt-hint" style={{ color:"rgba(255,255,255,0.4)", fontSize:"10px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.8px", margin:"0 0 7px 0" }}>Ask me about…</p>
+          <div role="group" aria-labelledby="prompt-hint" style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
+            {TOPIC_PROMPTS.map(opt => (
+              <button key={opt.label} onClick={() => sendMessageWith(opt.msg)}
+                style={{ display:"flex", alignItems:"center", gap:"5px", background:"rgba(99,179,237,0.08)", color:"#90cdf4", border:"1px solid rgba(99,179,237,0.22)", borderRadius:"20px", padding:"6px 13px", fontSize:"12px", fontWeight:"600", cursor:"pointer", outline:"none" }}
+                onMouseOver={e => { e.currentTarget.style.background="rgba(99,179,237,0.18)"; }}
+                onMouseOut={e  => { e.currentTarget.style.background="rgba(99,179,237,0.08)"; }}
+                {...focusRing("rgba(99,179,237,0.5)")}>
+                <span aria-hidden="true">{opt.icon}</span>{opt.label}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div style={{ padding:"10px 16px 14px", borderTop:"1px solid rgba(255,255,255,0.08)", display:"flex", gap:"8px", alignItems:"flex-end", flexShrink:0 }}>
+        <label htmlFor="chat-input" style={{ position:"absolute", width:"1px", height:"1px", overflow:"hidden", clip:"rect(0,0,0,0)", whiteSpace:"nowrap" }}>Your response</label>
+        <textarea id="chat-input" ref={inputRef} value={input} rows={1}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();} }}
+          onFocus={e => { e.currentTarget.style.borderColor="rgba(99,179,237,0.6)"; }}
+          onBlur={e  => { e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; }}
+          placeholder="Type your answer or question… (Enter to send, Shift+Enter for new line)"
+          aria-label="Your response to the tutor"
+          style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.12)", borderRadius:"12px", padding:"11px 14px", color:"#fff", fontSize:"14px", resize:"none", outline:"none", fontFamily:"inherit", lineHeight:"1.5", maxHeight:"120px", overflowY:"auto" }}
+        />
+        <button onClick={sendMessage} disabled={loading||!input.trim()} aria-label="Send message"
+          style={{ width:"44px", height:"44px", background:input.trim()&&!loading?"linear-gradient(135deg,#3b82f6,#8b5cf6)":"rgba(255,255,255,0.07)", border:"2px solid transparent", borderRadius:"12px", color:"#fff", fontSize:"18px", cursor:input.trim()&&!loading?"pointer":"not-allowed", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, outline:"none" }}
+          {...focusRing("rgba(139,92,246,0.6)")}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+<!-- Usage analytics: replace YOURCODE with your GoatCounter site code -->
+<script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
