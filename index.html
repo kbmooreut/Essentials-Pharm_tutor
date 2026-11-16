@@ -221,6 +221,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const msgCount = useRef(0); // student messages in the current session (for usage milestones)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
 
@@ -246,6 +247,7 @@ function App() {
     const weekInfo = WEEKS.find(w => w.id === selectedWeek);
     const weekLabel = selectedWeek==="all" ? "all weeks" : selectedWeek==="pk" ? "Pharmacokinetics/Pharmacodynamics" : `Week ${selectedWeek} (${weekInfo?.sub})`;
     const qtLabel = QUESTION_TYPES.find(q => q.id===selectedQType)?.label || "";
+    msgCount.current = 0;
     track("Session started");
     track(`Week: ${weekInfo?.label || selectedWeek}`);
     track(`Session type: ${selectedQType}`);
@@ -263,7 +265,10 @@ function App() {
 
   const sendMessageWith = async (text) => {
     if (!text.trim() || loading) return;
-    track("Message sent");
+    msgCount.current += 1;
+    if ([1, 5, 10, 20, 40].includes(msgCount.current)) {
+      track(`Reached ${msgCount.current} message${msgCount.current === 1 ? "" : "s"} in a session`);
+    }
     setInput("");
     const newHistory = [...messages, { role:"user", content:text }];
     setMessages(newHistory);
@@ -438,7 +443,7 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
-<!-- Usage analytics: replace YOURCODE with your GoatCounter site code -->
+<!-- Usage analytics (GoatCounter) -->
 <script data-goatcounter="https://kbmooreut.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
