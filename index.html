@@ -319,7 +319,7 @@ function App() {
               return <button key={w.id} role="radio" aria-checked={sel} onClick={() => setSelectedWeek(w.id)}
                 style={{ padding:"10px 12px", borderRadius:"10px", border:`2px solid ${sel?w.color:"rgba(255,255,255,0.1)"}`, background:sel?`${w.color}33`:"rgba(255,255,255,0.03)", color:sel?w.text:"rgba(255,255,255,0.95)", cursor:"pointer", textAlign:"left", outline:"none" }}
                 {...focusRing(`${w.color}88`)}>
-                <div style={{ fontWeight:"700", fontSize:"15px" }}>{w.label}</div>
+                <div style={{ fontWeight:"700", fontSize:"15px", color:w.text }}>{w.label}</div>
                 {w.sub && <div style={{ fontSize:"13px", opacity:0.95, marginTop:"2px" }}>{w.sub}</div>}
               </button>;
             })}
