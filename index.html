@@ -163,8 +163,13 @@ RULES:
 7. Detect frustration → scaffold to simpler sub-questions.
 8. Do NOT lecture. Always: Question → Student reasoning → Next question.
 9. NBME MCQ rules: 5 options (A-E), clinical vignette, single lead-in, plausible distractors.
-
-10. When asked for progress summary: topics covered, performance estimate, recommendations.`;
+10. When asked for progress summary: topics covered, performance estimate, recommendations.
+11. COMMIT FIRST: Before giving any hint, ask the student to commit to an answer or prediction (mechanism, drug choice, expected adverse effect). If they say "I don't know," ask for their best guess and what it is based on.
+12. CONFIDENCE CHECK (MCQs only): After the student selects an answer to an MCQ, ask them to rate confidence (low / medium / high) before you give feedback. In feedback, note whether confidence matched accuracy.
+13. EXPLAIN, NOT RECALL: Favor "why" and "what would happen if" questions over naming drugs. When a student is correct, ask them to explain the mechanism that makes it correct.
+14. SPOT THE ERROR (occasional, only after the student has answered 3+ questions correctly on a topic): Offer a short "student explanation" containing ONE deliberate error drawn from the course list (wrong mechanism, adverse effect, or interaction). Label it clearly as containing an error. Ask the student to find and correct it. ALWAYS confirm the correct information at the end so no error is left standing.
+15. NO SHORTCUTS: If the student asks you to just give the answer, list all the drugs, or summarize a topic before attempting it, invite them to try first with one guiding question. Rule 3 still applies after a genuine attempt.
+16. CLOSE THE LOOP: At the end of a case, ask the student to state the key reasoning step in one sentence, in their own words.`;
 
 const WEEKS = [
   { id:"all", label:"All Topics", color:"#6366f1" },
@@ -195,6 +200,16 @@ const TOPIC_PROMPTS = [
   { icon:"⚙️", label:"Mechanism of Action", msg:"Ask me a question specifically about mechanism of action." },
   { icon:"🎲", label:"Surprise Me", msg:"Pick any topic from my selected week and ask me a question — your choice." },
 ];
+
+// Usage tracking (GoatCounter) — anonymous counts only, no student data or message text.
+// Fails silently if the counter is blocked or hasn't loaded.
+const track = (name) => {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({ path: name, title: "Essentials 1.1 Pharmacology", event: true });
+    }
+  } catch (e) {}
+};
 
 function App() {
   const [screen, setScreen] = useState("home");
@@ -231,6 +246,10 @@ function App() {
     const weekInfo = WEEKS.find(w => w.id === selectedWeek);
     const weekLabel = selectedWeek==="all" ? "all weeks" : selectedWeek==="pk" ? "Pharmacokinetics/Pharmacodynamics" : `Week ${selectedWeek} (${weekInfo?.sub})`;
     const qtLabel = QUESTION_TYPES.find(q => q.id===selectedQType)?.label || "";
+    track("Session started");
+    track(`Week: ${weekInfo?.label || selectedWeek}`);
+    track(`Session type: ${selectedQType}`);
+    track(`Difficulty: ${difficulty}`);
     const initMsg = `Student selected: Week focus: ${weekLabel}, Question type: ${qtLabel}, Difficulty: ${difficulty}. Greet them warmly, confirm selections briefly, and begin immediately.`;
     try {
       const reply = await callAPI(initMsg, []);
@@ -244,6 +263,7 @@ function App() {
 
   const sendMessageWith = async (text) => {
     if (!text.trim() || loading) return;
+    track("Message sent");
     setInput("");
     const newHistory = [...messages, { role:"user", content:text }];
     setMessages(newHistory);
@@ -259,7 +279,7 @@ function App() {
   };
 
   const sendMessage = () => { if (input.trim()) sendMessageWith(input.trim()); };
-  const requestProgress = () => sendMessageWith("Please give me a progress summary of this session — topics covered, estimated performance, and what I should review.");
+  const requestProgress = () => { track("Progress summary requested"); return sendMessageWith("Please give me a progress summary of this session — topics covered, estimated performance, and what I should review."); };
   const reset = () => { setScreen("home"); setSelectedWeek(null); setSelectedQType(null); setDifficulty(null); setMessages([]); setInput(""); };
 
   const canStart = selectedWeek && selectedQType && difficulty;
@@ -418,5 +438,7 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
+<!-- Usage analytics: replace YOURCODE with your GoatCounter site code -->
+<script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
