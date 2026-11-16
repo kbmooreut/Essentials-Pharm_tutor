@@ -1,4 +1,3 @@
-
 [build]
   publish = "."           # folder where index.html lives
   functions = "netlify/functions"
@@ -7,6 +6,19 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+# Usage counting (GoatCounter), routed through this site so ad blockers don't stop it
+[[redirects]]
+  from = "/lib/helper.js"
+  to = "https://gc.zgo.at/count.js"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/lib/ping"
+  to = "https://kbmooreut.goatcounter.com/count"
+  status = 200
+  force = true
 
 [[headers]]
   for = "/*"
