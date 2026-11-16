@@ -172,17 +172,17 @@ RULES:
 16. CLOSE THE LOOP: At the end of a case, ask the student to state the key reasoning step in one sentence, in their own words.`;
 
 const WEEKS = [
-  { id:"all", label:"All Topics", color:"#6366f1" },
-  { id:"1", label:"Week 1", sub:"Heme / Anticoagulation / Malaria", color:"#ef4444" },
-  { id:"2", label:"Week 2", sub:"Oncology", color:"#f97316" },
-  { id:"3", label:"Week 3", sub:"Ischemic Heart / Antiplatelets / HTN", color:"#eab308" },
-  { id:"4", label:"Week 4", sub:"Antiarrhythmics / Pressors", color:"#84cc16" },
-  { id:"5", label:"Week 5", sub:"Heart Failure", color:"#22c55e" },
-  { id:"6", label:"Week 6", sub:"Antibiotics", color:"#14b8a6" },
-  { id:"7", label:"Week 7", sub:"Asthma / COPD / Lung Cancer", color:"#0ea5e9" },
-  { id:"8", label:"Week 8", sub:"HIV / TB", color:"#6366f1" },
-  { id:"9", label:"Week 9", sub:"Renal / Diuretics / GU", color:"#8b5cf6" },
-  { id:"11", label:"Week 11", sub:"CKD / Mineral Metabolism", color:"#ec4899" },
+  { id:"all", label:"All Topics", color:"#6366f1", text:"#a5b4fc" },
+  { id:"1", label:"Week 1", sub:"Heme / Anticoagulation / Malaria", color:"#ef4444", text:"#fca5a5" },
+  { id:"2", label:"Week 2", sub:"Oncology", color:"#f97316", text:"#fdba74" },
+  { id:"3", label:"Week 3", sub:"Ischemic Heart / Antiplatelets / HTN", color:"#eab308", text:"#fde047" },
+  { id:"4", label:"Week 4", sub:"Antiarrhythmics / Pressors", color:"#84cc16", text:"#bef264" },
+  { id:"5", label:"Week 5", sub:"Heart Failure", color:"#22c55e", text:"#86efac" },
+  { id:"6", label:"Week 6", sub:"Antibiotics", color:"#14b8a6", text:"#5eead4" },
+  { id:"7", label:"Week 7", sub:"Asthma / COPD / Lung Cancer", color:"#0ea5e9", text:"#7dd3fc" },
+  { id:"8", label:"Week 8", sub:"HIV / TB", color:"#6366f1", text:"#a5b4fc" },
+  { id:"9", label:"Week 9", sub:"Renal / Diuretics / GU", color:"#8b5cf6", text:"#c4b5fd" },
+  { id:"11", label:"Week 11", sub:"CKD / Mineral Metabolism", color:"#ec4899", text:"#f9a8d4" },
 ];
 
 const QUESTION_TYPES = [
@@ -317,7 +317,7 @@ function App() {
             {WEEKS.map(w => {
               const sel = selectedWeek===w.id;
               return <button key={w.id} role="radio" aria-checked={sel} onClick={() => setSelectedWeek(w.id)}
-                style={{ padding:"10px 12px", borderRadius:"10px", border:`2px solid ${sel?w.color:"rgba(255,255,255,0.1)"}`, background:sel?`${w.color}33`:"rgba(255,255,255,0.03)", color:sel?"#fff":"rgba(255,255,255,0.95)", cursor:"pointer", textAlign:"left", outline:"none" }}
+                style={{ padding:"10px 12px", borderRadius:"10px", border:`2px solid ${sel?w.color:"rgba(255,255,255,0.1)"}`, background:sel?`${w.color}33`:"rgba(255,255,255,0.03)", color:sel?w.text:"rgba(255,255,255,0.95)", cursor:"pointer", textAlign:"left", outline:"none" }}
                 {...focusRing(`${w.color}88`)}>
                 <div style={{ fontWeight:"700", fontSize:"15px" }}>{w.label}</div>
                 {w.sub && <div style={{ fontSize:"13px", opacity:0.95, marginTop:"2px" }}>{w.sub}</div>}
@@ -371,7 +371,7 @@ function App() {
             <div style={{ color:"#fff", fontWeight:"700", fontSize:"16px" }}>Essentials 1.1 Pharmacology</div>
             <div style={{ display:"flex", gap:"5px", marginTop:"3px", flexWrap:"wrap" }}>
               {[
-                { label:`${currentWeek?.label}${currentWeek?.sub?" · "+currentWeek.sub:""}`, bg:`${weekColor}33`, color:"#fff", border:`1px solid ${weekColor}50` },
+                { label:`${currentWeek?.label}${currentWeek?.sub?" · "+currentWeek.sub:""}`, bg:`${weekColor}33`, color:currentWeek?.text || "#fff", border:`1px solid ${weekColor}50` },
                 { label:QUESTION_TYPES.find(q=>q.id===selectedQType)?.label, bg:"rgba(99,102,241,0.18)", color:"#a5b4fc", border:"1px solid rgba(99,102,241,0.35)" },
                 { label:difficulty, bg:"rgba(34,197,94,0.14)", color:"#86efac", border:"1px solid rgba(34,197,94,0.3)" },
               ].map((b,i) => <span key={i} style={{ background:b.bg, color:b.color, fontSize:"13px", padding:"1px 8px", borderRadius:"20px", border:b.border, fontWeight:"600" }}>{b.label}</span>)}
